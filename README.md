@@ -4,6 +4,4 @@ Using Human Activity Recognition Using Smartphones Dataset, we calcualte activit
 
 
 ## Packages Used
-The R package dplyr is required to run this script. This maybe installed with,
-
-install.package("dplyr")
+The R package dplyr is required to run this script. This can be installed with: install.package("dplyr")
