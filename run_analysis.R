@@ -16,11 +16,11 @@ training <- data.frame(training.subject, training.y, training.x)
 testing <- data.frame(testing.subject, testing.y, testing.x)
 data <- rbind(training, testing)
 
-#get mean and std information
+#get mean and standard deviation information
 apply(training, 1, mean)
-#apply(training, 1, std)
+apply(training, 1, sd)
 apply(testing, 1, mean)
-#apply(testing, 1, std)
+apply(testing, 1, sd)
 
 #change labels
 data$V1[data$V1 == 1] <-"WALKING"
