@@ -11,16 +11,18 @@ testing.subject <-  read.csv("subject_test.txt", sep = "", header = FALSE)
 testing.x <- read.csv("X_test.txt", sep = "", header = FALSE)
 testing.y <- read.csv("y_test.txt", sep = "", header = FALSE)
 
-#combine data together into a single dataframe
+#combine columns into single dataframe
 training <- data.frame(training.subject, training.y, training.x)
 testing <- data.frame(testing.subject, testing.y, testing.x)
-data <- rbind(training, testing)
 
 #get mean and standard deviation information
 apply(training, 1, mean)
 apply(training, 1, sd)
 apply(testing, 1, mean)
 apply(testing, 1, sd)
+
+#combine data together into a single dataframe
+data <- rbind(training, testing)
 
 #change labels
 data$V1[data$V1 == 1] <-"WALKING"
@@ -32,7 +34,7 @@ data$V1[data$V1 == 6] <- "LAYING"
 
 #read lables in features dataset
 setwd("C:/Users/rboll/Documents/UCI HAR Dataset")
-features <- read.csv("features.txt", sep= "", header=FALSE)
+features <- read.csv("features.txt", sep = "", header = FALSE)
 #reformat to get activity and subject headers
 feature <- rbind(features[,c(1,2)], matrix(c(562,"activity", 563, "subject"), nrow = 2, byrow = TRUE))
 #add column labels
