@@ -2,11 +2,11 @@
 library(dplyr)
 
 #import and load data
-setwd("C:/Users/rboll/Documents/UCI HAR Dataset/train")
+setwd("C:/Users/rboll/Desktop/UCI HAR Dataset/train")
 training.subject <- read.csv("subject_train.txt", sep = "", header = FALSE)
 training.x <- read.csv("X_train.txt", sep = "", header = FALSE)
 training.y <- read.csv("y_train.txt", sep = "", header = FALSE)
-setwd("C:/Users/rboll/Documents/UCI HAR Dataset/test")
+setwd("C:/Users/rboll/Desktop/UCI HAR Dataset/test")
 testing.subject <-  read.csv("subject_test.txt", sep = "", header = FALSE)
 testing.x <- read.csv("X_test.txt", sep = "", header = FALSE)
 testing.y <- read.csv("y_test.txt", sep = "", header = FALSE)
@@ -15,37 +15,47 @@ testing.y <- read.csv("y_test.txt", sep = "", header = FALSE)
 training <- data.frame(training.subject, training.y, training.x)
 testing <- data.frame(testing.subject, testing.y, testing.x)
 
-#get mean and standard deviation information
-apply(training, 1, mean)
-apply(training, 1, sd)
-apply(testing, 1, mean)
-apply(testing, 1, sd)
-
 #combine data together into a single dataframe
-data <- rbind(training, testing)
+data <- rbind(testing, training)
 
-#change labels
-data$V1[data$V1 == 1] <-"WALKING"
-data$V1[data$V1 == 2] <-"WALKING UPSTAIRS"
-data$V1[data$V1 == 3] <- "WALKING DOWNSTAIRS"
-data$V1[data$V1 == 4] <- "SITTING"
-data$V1[data$V1 == 5] <- "STANDING"
-data$V1[data$V1 == 6] <- "LAYING"
+#read labels in features
+setwd("C:/Users/rboll/Desktop/UCI HAR Dataset")
+features <- read.table("features.txt")
+label <- features[,2]
+names(data) <- c(as.character(label), "activity", "subject")
+#data_table <- tbl_df(data)
 
-#read lables in features dataset
-setwd("C:/Users/rboll/Documents/UCI HAR Dataset")
-features <- read.csv("features.txt", sep = "", header = FALSE)
-#reformat to get activity and subject headers
-feature <- rbind(features[,c(1,2)], matrix(c(562,"activity", 563, "subject"), nrow = 2, byrow = TRUE))
-#add column labels
-colnames(data) <- feature[,2]
+#remove duplicates
+data_table <- data_table[!duplicated(names(data_table))]
 
-#group data by subject and activity, calculate mean for the measurements
-activitymean <- aggregate(data$activity, data, mean)
-subjectmean <- aggregate(activitymean$subject, activitymean, mean)
-data.summary <- subjectmean[,c(564,565)]
+#isolate mean and standard deviation for measurements
+data_table <- select(data_table, matches('std|mean|activity|subject'))
+
+
+#add meaningful labels
+data_table$activity[data_table$activity == 1] <- "WALKING"
+data_table$activity[data_table$activity == 2] <- "WALKING UPSTAIRS"
+data_table$activity[data_table$activity == 3] <- "WALKING DOWNSTAIRS"
+data_table$activity[data_table$activity == 4] <- "SITTING"
+data_table$activity[data_table$activity == 5] <- "STANDING"
+data_table$activity[data_table$activity == 6] <- "LAYING"
+
+#add additional labels for each measurement
+names(data_table) <- gsub('Acc',"Acceleration",names(data_table))
+names(data_table) <- gsub('tGravity|gravity',"Gravity",names(data_table))
+names(data_table) <- gsub('mean',"Mean",names(data_table))
+names(data_table) <- gsub('std',"StandardDev",names(data_table))
+names(data_table) <- gsub('^t',"TimeDomain.",names(data_table))
+names(data_table) <- gsub('^f',"FreqDomain.",names(data_table))
+names(data_table) <- gsub('\\(|\\)',"",names(data_table), perl = TRUE)
+names(data_table) <- gsub('-|,',"",names(data_table))
+
+#find means for each group
+data.summary <- data_table %>%
+  group_by(activity, subject) %>%
+  summarise_each(funs(mean))
 
 #write table
-write.table(data.summary, file = "data_table.txt", row.name = FALSE)
+write.table(data.summary, file = "data_table.txt", sep = "\t", row.names = FALSE)
 
 
